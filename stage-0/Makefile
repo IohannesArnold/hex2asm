@@ -15,23 +15,12 @@ PRINTF= /usr/bin/printf
 
 all:	unhex
 
-init:
 
 unhex:	unhex.x
-	for x in `$(CAT) unhex.x`; do $(PRINTF) \\x$$x; done > unhex
-	$(CHMOD) a+x unhex
-
+	../bin/unhex unhex.x ../bin/unhex
 check:	check-unhex
 
 check-unhex:
-	unhex < unhex.x > unhex2
-	$(CMP) unhex unhex2
-	$(RM) unhex2
+	../bin/unhex unhex.x ../bin/unhex2
+	$(CMP) ../bin/unhex ../bin/unhex2
 
-clean:
-	$(RM) -f unhex unhex2
-
-world:
-	$(MAKE) clean
-	$(MAKE) all
-	$(MAKE) check

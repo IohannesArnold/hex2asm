@@ -6,7 +6,7 @@
 SHELL = /bin/sh
 PATH  = .
 
-CHMOD = /bin/chmod
+CHMOD = ../bin/exec_enable
 RM    = /bin/rm
 CMP   = /usr/bin/cmp
 LN_S  = /bin/ln -sf
@@ -18,29 +18,23 @@ init as:	unhexl elfify
 
 unhexl elfify:
 	$(MAKE) -C ../stage-1
-	$(LN_S) ../stage-1/unhexl
-	$(LN_S) ../stage-1/elfify
 
 as:	as.ts.xl
-	unhexl < as.ts.xl > as.ts
-	elfify as.ts > as
-	$(CHMOD) a+x as
-	$(RM) as.ts
+	../bin/unhexl < as.ts.xl > ../bin/as.ts
+	../bin/elfify ../bin/as.ts > ../bin/as2
+	$(CHMOD) ../bin/as2
+	$(RM) ../bin/as.ts
 
 check:	check-as
 
 check-as:	as as.s
-	as as.s > as2.ts
-	elfify as2.ts > as2
-	$(CHMOD) a+x as2
-	as2 as.s > as3.ts
-	$(CMP) as2.ts as3.ts
-	$(RM) as2.ts as3.ts as2
+	../bin/as as.s > ../bin/as_1.ts
+	../bin/elfify ../bin/as_1.ts > ../bin/as_1
+	$(CHMOD) ../bin/as_1
+	../bin/as_1 as.s > ../bin/as_2.ts
+	$(CMP) ../bin/as_1.ts ../bin/as_2.ts
+	$(RM) ../bin/as_1.ts ../bin/as_2.ts ../bin/as_1
 
 clean:
-	$(RM) -f unhexl elfify as as.ts as2.ts as3.ts as2
+	$(RM) -f ../bin/as2 ../bin/as.ts
 
-world:
-	$(MAKE) clean
-	$(MAKE) all
-	$(MAKE) check

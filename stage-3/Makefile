@@ -6,7 +6,7 @@
 SHELL = /bin/sh
 PATH  = .
 
-CHMOD = /bin/chmod
+CHMOD = ../bin/exec_enable
 RM    = /bin/rm
 CMP   = /usr/bin/cmp
 LN_S  = /bin/ln -sf
@@ -14,79 +14,69 @@ MAKE  = /usr/bin/make
 
 all:	as ld
 
-init as ld:	as0 elfify
+init as ld:	../bin/as2 ../bin/elfify
 
-# as0 is the assemlber symlinked from stage 2.
-# as1 is this stage's assembler (written in asm), assembled by as0.
-# as  is the same source, assembled by itself (by as1), and therefore similar.
-# as2 is a test assembler produced by as; it should be binary identical to as.
+# as2   is the assemlber symlinked from stage 2.
+# as2.5 is this stage's assembler (written in asm), assembled by as0.
+# as3   is the same source, assembled by itself (by as1), and therefore similar.
+# as3_2 is a test assembler produced by as; it should be binary identical to as.
 
-# The same conventions apply to ld, except that there is no ld0.
+# The same conventions apply to ld, except that there is no ld2.5.
 
-as0 elfify:
+../bin/as2 ../bin/elfify:
 	$(MAKE) -C ../stage-2
-	$(LN_S) ../stage-2/as as0
-	$(LN_S) ../stage-2/elfify
 
-as1:	as.s
-	as0 as.s > as.ts
-	elfify as.ts > as1
-	$(CHMOD) a+x as1
-	$(RM) as.ts
+as2.5:	as.s
+	../bin/as2 as.s > ../bin/as.ts
+	../bin/elfify ../bin/as.ts > ../bin/as2.5
+	$(CHMOD) ../bin/as2.5
+	$(RM) ../bin/as.ts
 
-ld1:	ld.s
-	as0 ld.s > ld.ts
-	elfify ld.ts > ld1
-	$(CHMOD) a+x ld1
-	$(RM) ld.ts
+ld2.5:	ld.s
+	../bin/as2 ld.s > ../bin/ld.ts
+	../bin/elfify ../bin/ld.ts > ../bin/ld2.5
+	$(CHMOD) ../bin/ld2.5
+	$(RM) ../bin/ld.ts
 
 check:	check-as check-ld check-sep
 
-as:	as1 ld1 as.s
-	as1 as.s
-	ld1 -o as as.o
+as:	as2.5 ld2.5 as.s
+	../bin/as2.5 as.s
+	../bin/ld2.5 -o ../bin/as3 as.o
 	$(RM) as.o
 
-ld:	as1 ld1 ld.s
-	as1 ld.s
-	ld1 -o ld ld.o
+ld:	as2.5 ld2.5 ld.s
+	../bin/as2.5 ld.s
+	../bin/ld2.5 -o ../bin/ld3 ld.o
 	$(RM) ld.o
 
 check-as:	as ld as.s
-	$(RM) -f as.o
-	as as.s
-	ld -o as2 as.o
-	$(CMP) as as2
-	$(RM) as.o as2
+	../bin/as3 as.s
+	../bin/ld3 -o ../bin/as3_2 as.o
+	$(CMP) ../bin/as3 ../bin/as3_2
+	$(RM) as.o ../bin/as3_2
 
 check-ld:	as ld ld.s
-	$(RM) -f ld.o
-	as ld.s
-	ld -o ld2 ld.o
-	$(CMP) ld ld2
-	$(RM) ld.o ld2
+	../bin/as3 ld.s
+	../bin/ld3 -o ../bin/ld3_2 ld.o
+	$(CMP) ../bin/ld3 ../bin/ld3_2
+	$(RM) ld.o ../bin/ld3_2
 
 testprog:	as ld test1.s test2.s test3.s
-	as test2.s
-	as test3.s
-	ld -r -o test2+3.o test2.o test3.o
-	as test1.s
-	ld -o testprog test1.o test2+3.o
+	../bin/as3 test2.s
+	../bin/as3 test3.s
+	../bin/ld3 -r -o test2+3.o test2.o test3.o
+	../bin/as3 test1.s
+	../bin/ld3 -o testprog test1.o test2+3.o
 	$(RM) test1.o test2.o test3.o test2+3.o
 
 check-sep:	testprog
 	testprog
 	$(RM) testprog
 
-.INTERMEDIATE:	as.ts ld.ts as.o ld.o as1 ld1
 
 clean:
-	$(RM) -f as0 elfify
 	$(RM) -f as.ts ld.ts as.o ld.o as1 ld1
 	$(RM) -f as2.o ld2.o ld as2 ld2 as ld
 	$(RM) -f test1.o test2.o test3.o test2+3.o testprog
 
-world:
-	$(MAKE) clean
-	$(MAKE) all
-	$(MAKE) check

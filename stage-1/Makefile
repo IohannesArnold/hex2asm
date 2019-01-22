@@ -6,10 +6,8 @@
 SHELL = /bin/sh
 PATH  = .
 
-CHMOD = /bin/chmod
 RM    = /bin/rm
 CMP   = /usr/bin/cmp
-LN_S  = /bin/ln -sf
 MAKE  = /usr/bin/make
 
 all:	unhexl elfify 
@@ -18,34 +16,31 @@ init unhexl elfify: unhex
 
 unhex:
 	$(MAKE) -C ../stage-0
-	$(LN_S) ../stage-0/unhex
 
 elfify:	unhex elfify.x
-	unhex < elfify.x > elfify
-	$(CHMOD) a+x elfify
+	../bin/unhex elfify.x ../bin/elfify
 
-unhexl:	unhex elfify unhexl.ts.x
-	unhex < unhexl.ts.x > unhexl.ts
-	elfify unhexl.ts > unhexl
-	$(CHMOD) a+x unhexl
-	$(RM) unhexl.ts
+exec_enable: unhex exec_enable.x
+	../bin/unhex exec_enable.x ../bin/exec_enable
+
+unhexl:	unhex elfify exec_enable unhexl.ts.x
+	../bin/unhex unhexl.ts.x ../bin/unhexl.ts
+	../bin/elfify ../bin/unhexl.ts > ../bin/unhexl
+	../bin/exec_enable ../bin/unhexl
+	$(RM) ../bin/unhexl.ts
 
 check:	check-unhexl
 
 check-unhexl:	unhexl elfify unhexl.ts.xl
-	unhexl < unhexl.ts.xl > unhexl.ts
-	elfify unhexl.ts > unhexl2
-	$(CHMOD) a+x unhexl2
-	unhexl2 < unhexl.ts.xl > unhexl2.ts
-	$(CMP) unhexl.ts unhexl2.ts
-	elfify unhexl2.ts > unhexl3
-	$(CMP) unhexl2 unhexl3
-	$(RM) unhexl.ts unhexl2.ts unhexl2 unhexl3
+	../bin/unhexl < unhexl.ts.xl > ../bin/unhexl_1.ts
+	../bin/elfify ../bin/unhexl_1.ts > ../bin/unhexl_1
+	../bin/exec_enable ../bin/unhexl_1
+	../bin/unhexl_1 < unhexl.ts.xl > ../bin/unhexl_2.ts
+	$(CMP) ../bin/unhexl_1.ts ../bin/unhexl_2.ts
+	../bin/elfify ../bin/unhexl_2.ts > ../bin/unhexl_2
+	$(CMP) ../bin/unhexl_1 ../bin/unhexl_2
+	$(RM) ../bin/unhexl_1.ts ../bin/unhexl_2.ts ../bin/unhexl_1 ../bin/unhexl_2
 
 clean:
-	$(RM) -f unhex unhexl elfify unhexl.ts unhexl2.ts unhexl2 unhexl3
+	$(RM) -f ../bin/unhexl ../bin/elfify ../bin/unhexl.ts 
 
-world:
-	$(MAKE) clean
-	$(MAKE) all
-	$(MAKE) check
