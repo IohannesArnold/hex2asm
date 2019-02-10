@@ -1,40 +1,44 @@
 # stage-2/Makefile
+# Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2010, 2011 Richard Smith <richard@ex-parrot.com>
-# All rights reserved.
+include ../config.make
 
-SHELL = /bin/sh
-PATH  = .
+all:	as2
 
-CHMOD = ../bin/exec_enable
-RM    = /bin/rm
-CMP   = /usr/bin/cmp
-LN_S  = /bin/ln -sf
-MAKE  = /usr/bin/make
-
-all:	as
-
-init as:	unhexl elfify
-
-unhexl elfify:
+$(BUILD)/unhexl $(BUILD)/elfify:
 	$(MAKE) -C ../stage-1
 
-as:	as.ts.xl
-	../bin/unhexl < as.ts.xl > ../bin/as.ts
-	../bin/elfify ../bin/as.ts > ../bin/as2
-	$(CHMOD) ../bin/as2
-	$(RM) ../bin/as.ts
+as2:	$(BUILD)/as2
+
+$(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
+	$(BUILD)/unhexl < as.ts.xl > $(BUILD)/as.ts
+	$(BUILD)/elfify $(BUILD)/as.ts > $(BUILD)/as2
+	$(CHMOD) +x $(BUILD)/as2
+	$(RM) $(BUILD)/as.ts
 
 check:	check-as
 
-check-as:	as as.s
-	../bin/as as.s > ../bin/as_1.ts
-	../bin/elfify ../bin/as_1.ts > ../bin/as_1
-	$(CHMOD) ../bin/as_1
-	../bin/as_1 as.s > ../bin/as_2.ts
-	$(CMP) ../bin/as_1.ts ../bin/as_2.ts
-	$(RM) ../bin/as_1.ts ../bin/as_2.ts ../bin/as_1
+check-as:	$(BUILD)/as2 as.s
+	$(BUILD)/as2 as.s > $(BUILD)/as_1.ts
+	$(BUILD)/elfify $(BUILD)/as_1.ts > $(BUILD)/as_1
+	$(CHMOD) +x $(BUILD)/as_1
+	$(BUILD)/as_1 as.s > $(BUILD)/as_2.ts
+	$(CMP) $(BUILD)/as_1.ts $(BUILD)/as_2.ts
+	$(RM) $(BUILD)/as_1.ts $(BUILD)/as_2.ts $(BUILD)/as_1
 
 clean:
-	$(RM) -f ../bin/as2 ../bin/as.ts
+	$(RM) -f $(BUILD)/as2 $(BUILD)/as.ts
 

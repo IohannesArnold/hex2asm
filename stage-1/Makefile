@@ -1,46 +1,51 @@
 # stage-1/Makefile
+# Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009, 2011 Richard Smith <richard@ex-parrot.com>
-# All rights reserved.
+include ../config.make
 
-SHELL = /bin/sh
-PATH  = .
+all: elfify unhexl
 
-RM    = /bin/rm
-CMP   = /usr/bin/cmp
-MAKE  = /usr/bin/make
-
-all:	unhexl elfify 
-
-init unhexl elfify: unhex
-
-unhex:
+$(BUILD)/unhex:
 	$(MAKE) -C ../stage-0
 
-elfify:	unhex elfify.x
-	../bin/unhex elfify.x ../bin/elfify
+elfify:	$(BUILD)/elfify
 
-exec_enable: unhex exec_enable.x
-	../bin/unhex exec_enable.x ../bin/exec_enable
+$(BUILD)/elfify:	$(BUILD)/unhex elfify.x
+	$(BUILD)/unhex elfify.x $(BUILD)/elfify
 
-unhexl:	unhex elfify exec_enable unhexl.ts.x
-	../bin/unhex unhexl.ts.x ../bin/unhexl.ts
-	../bin/elfify ../bin/unhexl.ts > ../bin/unhexl
-	../bin/exec_enable ../bin/unhexl
-	$(RM) ../bin/unhexl.ts
+unhexl:	$(BUILD)/unhexl
+
+$(BUILD)/unhexl:	$(BUILD)/unhex elfify unhexl.ts.x
+	$(BUILD)/unhex unhexl.ts.x $(BUILD)/unhexl.ts
+	$(BUILD)/elfify $(BUILD)/unhexl.ts > $(BUILD)/unhexl
+	$(CHMOD) +x $(BUILD)/unhexl
+	$(RM) $(BUILD)/unhexl.ts
 
 check:	check-unhexl
 
 check-unhexl:	unhexl elfify unhexl.ts.xl
-	../bin/unhexl < unhexl.ts.xl > ../bin/unhexl_1.ts
-	../bin/elfify ../bin/unhexl_1.ts > ../bin/unhexl_1
-	../bin/exec_enable ../bin/unhexl_1
-	../bin/unhexl_1 < unhexl.ts.xl > ../bin/unhexl_2.ts
-	$(CMP) ../bin/unhexl_1.ts ../bin/unhexl_2.ts
-	../bin/elfify ../bin/unhexl_2.ts > ../bin/unhexl_2
-	$(CMP) ../bin/unhexl_1 ../bin/unhexl_2
-	$(RM) ../bin/unhexl_1.ts ../bin/unhexl_2.ts ../bin/unhexl_1 ../bin/unhexl_2
+	$(BUILD)/unhexl < unhexl.ts.xl > $(BUILD)/unhexl_1.ts
+	$(BUILD)/elfify $(BUILD)/unhexl_1.ts > $(BUILD)/unhexl_1
+	$(CHMOD) +x $(BUILD)/unhexl_1
+	$(BUILD)/unhexl_1 < unhexl.ts.xl > $(BUILD)/unhexl_2.ts
+	$(CMP) $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_2.ts
+	$(BUILD)/elfify $(BUILD)/unhexl_2.ts > $(BUILD)/unhexl_2
+	$(CMP) $(BUILD)/unhexl_1 $(BUILD)/unhexl_2
+	$(RM) $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_2.ts $(BUILD)/unhexl_1 $(BUILD)/unhexl_2
 
 clean:
-	$(RM) -f ../bin/unhexl ../bin/elfify ../bin/unhexl.ts 
+	$(RM) -f $(BUILD)/unhexl $(BUILD)/elfify $(BUILD)/unhexl.ts 
 
