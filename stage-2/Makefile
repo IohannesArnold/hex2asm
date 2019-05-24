@@ -25,16 +25,14 @@ as2:	$(BUILD)/as2
 
 $(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
 	$(BUILD)/unhexl < as.ts.xl > $(BUILD)/as.ts
-	$(BUILD)/elfify $(BUILD)/as.ts > $(BUILD)/as2
-	$(CHMOD) +x $(BUILD)/as2
+	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2
 	$(RM) $(BUILD)/as.ts
 
 check:	check-as
 
 check-as:	$(BUILD)/as2 as.s
 	$(BUILD)/as2 as.s > $(BUILD)/as_1.ts
-	$(BUILD)/elfify $(BUILD)/as_1.ts > $(BUILD)/as_1
-	$(CHMOD) +x $(BUILD)/as_1
+	$(BUILD)/elfify $(BUILD)/as_1.ts $(BUILD)/as_1
 	$(BUILD)/as_1 as.s > $(BUILD)/as_2.ts
 	$(CMP) $(BUILD)/as_1.ts $(BUILD)/as_2.ts
 	$(RM) $(BUILD)/as_1.ts $(BUILD)/as_2.ts $(BUILD)/as_1

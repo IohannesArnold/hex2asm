@@ -30,19 +30,17 @@ unhexl:	$(BUILD)/unhexl
 
 $(BUILD)/unhexl:	$(BUILD)/unhex elfify unhexl.ts.x
 	$(BUILD)/unhex unhexl.ts.x $(BUILD)/unhexl.ts
-	$(BUILD)/elfify $(BUILD)/unhexl.ts > $(BUILD)/unhexl
-	$(CHMOD) +x $(BUILD)/unhexl
+	$(BUILD)/elfify $(BUILD)/unhexl.ts $(BUILD)/unhexl
 	$(RM) $(BUILD)/unhexl.ts
 
 check:	check-unhexl
 
 check-unhexl:	unhexl elfify unhexl.ts.xl
 	$(BUILD)/unhexl < unhexl.ts.xl > $(BUILD)/unhexl_1.ts
-	$(BUILD)/elfify $(BUILD)/unhexl_1.ts > $(BUILD)/unhexl_1
-	$(CHMOD) +x $(BUILD)/unhexl_1
+	$(BUILD)/elfify $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_1
 	$(BUILD)/unhexl_1 < unhexl.ts.xl > $(BUILD)/unhexl_2.ts
 	$(CMP) $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_2.ts
-	$(BUILD)/elfify $(BUILD)/unhexl_2.ts > $(BUILD)/unhexl_2
+	$(BUILD)/elfify $(BUILD)/unhexl_2.ts $(BUILD)/unhexl_2
 	$(CMP) $(BUILD)/unhexl_1 $(BUILD)/unhexl_2
 	$(RM) $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_2.ts $(BUILD)/unhexl_1 $(BUILD)/unhexl_2
 

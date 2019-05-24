@@ -30,14 +30,12 @@ $(BUILD)/as2 $(BUILD)/elfify:
 
 $(BUILD)/as2.5:	as.s $(BUILD)/as2 $(BUILD)/elfify
 	$(BUILD)/as2 as.s > $(BUILD)/as.ts
-	$(BUILD)/elfify $(BUILD)/as.ts > $(BUILD)/as2.5
-	$(CHMOD) +x $(BUILD)/as2.5
+	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2.5
 	$(RM) $(BUILD)/as.ts
 
 $(BUILD)/ld2.5:	ld.s $(BUILD)/as2 $(BUILD)/elfify
 	$(BUILD)/as2 ld.s > $(BUILD)/ld.ts
-	$(BUILD)/elfify $(BUILD)/ld.ts > $(BUILD)/ld2.5
-	$(CHMOD) +x $(BUILD)/ld2.5
+	$(BUILD)/elfify $(BUILD)/ld.ts $(BUILD)/ld2.5
 	$(RM) $(BUILD)/ld.ts
 
 $(BUILD)/as:	as.s $(BUILD)/as2.5 $(BUILD)/ld2.5 
