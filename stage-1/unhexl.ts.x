@@ -1,171 +1,331 @@
-55
-89 E5
-8B 45 08
-3C 20
-74 0A
-3C 09
-74 06
-3C 0A
-74 02
-31 C0
-5D
-C3
-55
-89 E5
-8B 45 08
-3C 30
-7C 18
-3C 3A
-7C 16
-3C 41
-7C 10
-3C 5B
-7C 0E
-3C 5F
-74 0A
-3C 61
-7C 04
-3C 7B
-7C 02
-31 C0
-5D
-C3
-55
-89 E5
-8B 45 08
-3C 30
-7C 0C
-3C 3A
-7C 0F
-3C 41
-7C 04
-3C 46
-7E 0B
-B8 FF FF FF FF
-EB 06
-2C 30
-EB 02
-2C 37
-5D
-C3
-55
-89 E5
-BA 01 00 00 00
-31 DB
-B8 03 00 00 00
-CD 80
-83 F8 01
-0F 85 3F 01 00 00
-5D
-C3
-89 E5
-81 EC 58 10 00 00
-8D 85 A8 EF FF FF
-89 45 A8
-C7 45 FC 00 00 00 00
-BA 01 00 00 00
-8D 4D AC
-31 DB
-B8 03 00 00 00
-CD 80
-83 F8 00
-0F 8C 0B 01 00 00
-89 C3
-0F 84 08 01 00 00
-8A 45 AC
-50
-E8 40 FF FF FF
-83 F8 00
-5A
-75 CF
-80 7D AC 23
-74 4D
-52
-E8 6A FF FF FF
-5B
-3C FF
-74 55
-50
-8D 4D AD
-E8 81 FF FF FF
-5B
-FF 75 AD
-E8 53 FF FF FF
-5A
-83 F8 FF
-0F 84 C7 00 00 00
-C6 C1 04
-D2 E3
-00 D8
-50
-BA 01 00 00 00
-89 E0
-8D 08
-BB 01 00 00 00
-B8 04 00 00 00
-CD 80
-5A
-FF 45 FC
-E9 7C FF FF FF
-8D 4D AC
-E8 40 FF FF FF
-80 7D AC 0A
-75 F2
-E9 69 FF FF FF
-8D 4D AC
-41
-E8 2C FF FF FF
-FF 31
-E8 DA FE FF FF
-5B
-83 F8 00
-75 ED
-80 39 3A
-9C
-C6 01 00
-41
-8D 75 AC
-29 F1
-83 F9 12
-0F 8F 62 00 00 00
-9D
-75 1F
-8D 5D A8
-8B 3B
-39 F7
-0F 8D 52 00 00 00
-F3 A4
-8B 45 FC
-8B 3B
-89 47 0C
-83 03 10
-E9 1B FF FF FF
-8D BD A8 EF FF FF
-3B 7D A8
-7D 35
-51
-56
-57
-F3 A6
-5F
-5E
-59
-74 05
-83 C7 10
-EB EC
-83 45 FC 04
-8B 47 0C
-2B 45 FC
-50
-BA 04 00 00 00
-89 E0
-8D 08
-BB 01 00 00 00
-B8 04 00 00 00
-CD 80
-58
-E9 DB FE FF FF
-BB 01 00 00 00
-B8 01 00 00 00
-CD 80
-E9 B2 FE FF FF
+# Copyright (C) 2009 - 2019 Richard Smith <richard@ex-parrot.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+####    #  Function: bool isws(char)
+	#  Tests whether its argument is in [ \t\n]
+
+	#  As with many of the functions here, it is turned upside down
+	#  so the entry point is in the middle.  This is because unhexl
+	#  is limited to jumps up the file.
+#.L1:
+	5D			#	POP	%ebp
+	C3			#	RET
+#isws:
+	55               	#	PUSH	%ebp
+	89 E5            	#	MOVL	%esp, %ebp
+	8B 45 08         	#	MOVL	8(%ebp), %eax
+	3C 20            	#	CMPB	$0x20, %al	# ' '
+	0F 84 F0 FF FF FF	#	JE	.L1
+	3C 09            	#	CMPB	$0x09, %al	# '\t'
+	0F 84 E8 FF FF FF	#	JE	.L1
+	3C 0A            	#	CMPB	$0x0A, %al	# '\n'
+	0F 84 E0 FF FF FF	#	JE	.L1
+	31 C0            	#	XORL	%eax, %eax
+	E9 D9 FF FF FF   	#	JMP	.L1
+
+####	#  Function: bool islchr(char)
+	#  Tests whether its argument is in [0-9A-Za-z_]
+#.L2:
+	31 C0			#	XORL	%eax, %eax
+#.L3:
+	5D			#	POP	%ebp
+	C3			#	RET
+#islchr:
+	55               	#	PUSH	%ebp
+	89 E5            	#	MOVL	%esp, %ebp
+	8B 45 08         	#	MOVL	8(%ebp), %eax
+	3C 30            	#	CMPB	$0x30, %al	# '0'
+	0F 8C EE FF FF FF	#	JL	.L2
+	3C 39            	#	CMPB	$0x39, %al	# '9'
+	0F 8E E8 FF FF FF	#	JLE	.L3
+	3C 41            	#	CMPB	$0x41, %al	# 'A'
+	0F 8C DE FF FF FF	#	JL	.L2
+	3C 5A            	#	CMPB	$0x5A, %al	# 'Z'
+	0F 8E D8 FF FF FF	#	JLE	.L3
+	3C 5F            	#	CMPB	$0x5F, %al	# '_'
+	0F 84 D0 FF FF FF	#	JE	.L3
+	3C 61            	#	CMPB	$0x61, %al	# 'a'
+	0F 8C C6 FF FF FF	#	JL	.L2
+	3C 7A            	#	CMPB	$0x7A, %al	# 'z'
+	0F 8E C0 FF FF FF	#	JLE	.L3
+	E9 B9 FF FF FF   	#	JMP	.L2
+
+####	#  Function: int xchar(char)
+	#  Tests whether its argument is a character in [0-9A-F], and if so, 
+	#  coverts it to a decimal number; otherwise returns -1.
+#.L6:
+	2C 37			#	SUBB	$0x37, %al	# 'A'-10
+#.L7:
+	5D			#	POP	%ebp
+	C3			#	RET
+#.L4:
+	B8 FF FF FF FF		#	MOVL	$-1, %eax
+	E9 F4 FF FF FF		#	JMP	.L7
+#.L5:
+	2C 30			#	SUBB	$0x30, %al	# '0'
+	E9 ED FF FF FF		#	JMP	.L7
+#xchr:
+	55               	#	PUSH	%ebp
+	89 E5            	#	MOVL	%esp, %ebp
+	8B 45 08         	#	MOVL	8(%ebp), %eax
+	3C 30            	#	CMPB	$0x30, %al	# '0'
+	0F 8C E1 FF FF FF	#	JL	.L4
+	3C 39            	#	CMPB	$0x39, %al	# '9'
+	0F 8E E3 FF FF FF	#	JLE	.L5
+	3C 41            	#	CMPB	$0x41, %al	# 'A'
+	0F 8C D1 FF FF FF	#	JL	.L4
+	3C 46            	#	CMPB	$0x46, %al	# 'F'
+	0F 8E C5 FF FF FF	#	JLE	.L6
+	E9 C4 FF FF FF   	#	JMP	.L4
+
+####	#  Not a proper function.
+	#  Exits program
+#error:
+	BB 01 00 00 00		#	MOVL	$1, %ebx
+#success:
+	B8 01 00 00 00		#	MOVL	$1, %eax
+	CD 80			#	INT	$0x80
+
+####	#  Function:	void readone( [%ecx] char* ) 
+	#  Reads one byte into (%ecx) which should already be set.
+	#  Clobbers %edx, %ebx and %eax.
+	#  Exits on failure.
+#readone:
+	8B 5D 04		# movl 4(%ebp), %ebx
+	55			#	PUSH	%ebp
+	89 E5			#	MOVL	%esp, %ebp
+	BA 01 00 00 00		#	MOVL	$1, %edx
+	B8 03 00 00 00		#	MOVL	$3, %eax
+	CD 80			#	INT	$0x80
+	83 F8 01		#	CMPL	$1, %eax
+	0F 85 D9 FF FF FF	#	JNE	error
+	5D			#	POP	%ebp
+	C3			#	RET
+
+####	#  The main function.
+	#  Stack is arranged as follows:
+	#
+	#       -4(%ebp)	int* addr
+	#      -84(%ebp)	char buffer[80]
+	#      -88(%ebp)	label* label_end
+	#    -4184(%ebp)	label labels[256]
+	#
+	#  where label is a { char name[12]; int addr }.
+
+#ret:
+	# This ret is labelled to allow various bits of main to
+	# jump up to it in order to effect a forwards jump.
+	31 C0			#	XORL	%eax, %eax
+	C3			#	RET
+
+	#  --- Test for a comment.
+	#  If found, skip over comment line until we've read a LF
+	#  At end of section, %eax=1 iff we read a comment.
+	#  If %eax=0, all other registers are unaltered.
+#comment:
+        80 7D AC 23             #       CMPB    $0x23, -84(%ebp)
+	0F 85 F3 FF FF FF	#	JNE	ret
+#.L10:
+	8D 4D AC         	#	LEA	-84(%ebp), %ecx
+	E8 CE FF FF FF   	#	CALL	readone
+	80 7D AC 0A      	#	CMPL	$0x0A, -84(%ebp)	# '\n'
+	0F 85 EE FF FF FF	#	JNE	.L10
+	B8 01 00 00 00   	#	MOVL	$1, %eax
+	C3               	#	RET
+
+	# --- Test for an octet.
+#octet:
+	FF 75 AC         	#	PUSH	-84(%ebp)
+	E8 7F FF FF FF   		#	CALL	xchr
+	5B               	#	POP	%ebx
+	3C FF            	#	CMPB	$-1, %al
+	0F 84 CA FF FF FF	#	JE	ret
+
+	#  Yes, we do.  Read the next byte
+	50			#	PUSH	%eax
+	8D 4D AD		#	LEA	-83(%ebp), %ecx
+	E8 A4 FF FF FF		#	CALL	readone
+	5B			#	POP	%ebx
+
+	#  Process it
+	FF 75 AD         	#	PUSH	-83(%ebp)
+	E8 64 FF FF FF   	#	CALL	xchr
+	5A               	#	POP	%edx
+	83 F8 FF         	#	CMPL	$-1, %eax
+	0F 84 85 FF FF FF	#	JE	error
+	C6 C1 04         	#	MOVB	$4, %cl
+	D2 E3            	#	SALB	%cl, %bl
+	00 D8            	#	ADDB	%bl, %al
+
+	#  Byte is now in %al; lets write it
+	50			#	PUSH	%eax
+	BA 01 00 00 00		#	MOVL	$1, %edx
+	89 E0			#	MOVL	%esp, %eax
+	8D 08			#	LEA	(%eax), %ecx
+	8B 5D 00		# movl 0(%ebp), %ebx
+	B8 04 00 00 00		#	MOVL	$4, %eax
+	CD 80			#	INT	$0x80
+	5A			#	POP	%edx
+
+	#  Increment the address and return
+	FF 45 FC		#	INCL	-4(%ebp)
+	B8 01 00 00 00		#	MOVL	$1, %eax
+	C3			#	RET
+
+
+	#  Parts of the label section
+#labeldef:
+	#  Check that we're not about to over run the label store,
+	#  and then store the label
+	8D 5D A8		#	LEA	-88(%ebp), %ebx
+	8B 3B			#	MOVL	(%ebx), %edi
+	39 DF			#	CMPL	%ebx, %edi -- is this right?
+	0F 8D 53 FF FF FF	#	JGE	error
+	F3 A4			#	rep movsb %ds:(%esi),%es:(%edi)
+	8B 45 FC		#	MOVL	-4(%ebp), %eax
+	8B 3B			#	MOVL	(%ebx), %edi
+	89 47 0C		#	MOVL	%eax, 12(%edi)
+	83 03 10		#	ADDL	$16, (%ebx)
+	B8 01 00 00 00		#	MOVL	$1, %eax
+	C3			#	RET
+
+#labelref:
+	#  Look up the label
+	8D BD 98 EF FF FF	#	LEA	-4200(%ebp), %edi
+#.L14:
+	83 C7 10		#	ADDL	$16, %edi
+	3B 7D A8		#	CMPL	-88(%ebp), %edi
+	0F 8D 2E FF FF FF	#	JGE	error
+	51			#	PUSH	%ecx
+	56			#	PUSH	%esi
+	57			#	PUSH	%edi
+	F3 A6			#	repz cmpsb %es:(%edi),%ds:(%esi)
+	5F			#	POP	%edi
+	5E			#	POP	%esi
+	59			#	POP	%ecx
+	0F 85 E6 FF FF FF	#	JNE	.L14
+
+	#  Found it.  Increment address by four and print offset
+	83 45 FC 04		#	ADDL	$4, -4(%ebp)
+	8B 47 0C		#	MOVL	12(%edi), %eax
+	2B 45 FC		#	SUBL	-4(%ebp), %eax
+	50			#	PUSH	%eax
+	BA 04 00 00 00		#	MOVL	$4, %edx
+	89 E0			#	MOVL	%esp, %eax
+	8D 08			#	LEA	(%eax), %ecx
+	BB 01 00 00 00		#	MOVL	$1, %ebx
+	8B 5D 00		# movl 0(%ebp), %ebx
+	B8 04 00 00 00		#	MOVL	$4, %eax
+	CD 80			#	INT	$0x80
+	58			#	POP	%eax
+	B8 01 00 00 00		#	MOVL	$1, %eax
+	C3			#	RET
+
+	# --- Test for a label (either definition or reference).
+#label:
+	#  Read a label
+	8D 4D AC		#	LEA	-84(%ebp), %ecx
+#.L12:
+	41               	#	INCL	%ecx
+	E8 F9 FE FF FF   	#	CALL	readone
+	FF 31            	#	PUSH	(%ecx)
+	E8 63 FE FF FF   	#	CALL	islchr
+	5B               	#	POP	%ebx
+	83 F8 00         	#	CMPL	$0, %eax
+	0F 85 E9 FF FF FF	#	JNE	.L12
+
+	#  (%ecx) is now something other than lchr.  Is it a colon?
+	#  Also, null terminate, load %esi with start of string, and
+	#  %ecx with its length inc. NUL.
+	80 39 3A         	#	CMPB	$0x3A, (%ecx)
+	9C               	#	PUSHF
+	C6 01 00         	#	MOVB	$0, (%ecx)
+	41               	#	INCL	%ecx
+	8D 75 AC         	#	LEA	-84(%ebp), %esi
+	29 F1            	#	SUBL	%esi, %ecx
+	83 F9 12         	#	CMPL	$12, %ecx
+	0F 8F C6 FE FF FF	#	JG	error
+	9D               	#	POPF
+	0F 85 7F FF FF FF	#	JNE	labelref
+	E9 5A FF FF FF   	#	JMP	labeldef
+
+	#  --- The main loop
+#main:
+	89 E5			#	MOVL	%esp, %ebp
+
+	83 7D 00 03		# cmpl $3, 0(%ebp)
+	BB 01 00 00 00		# movl $1, %ebx
+	0F 85 A9 FE FF FF	#	JNE	error
+
+# Open input file
+	B8 05 00 00 00			# movl $5, %eax
+	8B 5D 08			# movl 8(%ebp), %ebx
+	31 C9				# xorl %ecx, %ecx
+	CD 80				# int $0x80
+	83 F8 00			# cmpl $0, %eax
+	0F 8C E3 00 00 00		# jl .exit
+	50				# pushl %eax
+	                                                
+# Open output file
+	B8 05 00 00 00			# movl $5, %eax
+	8B 5D 0C			# movl 12(%ebp), %ebx
+	B9 42 00 00 00			# movl $0102, %ecx
+	BA EC 01 00 00			# movl $0754, %edx
+	CD 80				# int $0x80
+	83 F8 00			# cmpl $0, %eax
+	0F 8C C5 00 00 00		# jl .exit
+	50				# pushl %eax
+
+	89 E5			#	MOVL	%esp, %ebp
+	81 EC 58 10 00 00	#	SUBL	$4184, %esp
+	8D 85 A8 EF FF FF	#	LEA	-4184(%ebp), %eax
+	89 45 A8		#	MOVL	%eax, -88(%ebp)
+	C7 45 FC 00 00 00 00	#	MOVL	$0, -4(%ebp)
+
+#.L8:
+	#  Read one byte (not with readone because EOF is permitted)
+	BA 01 00 00 00   	#	MOVL	$1, %edx
+	8D 4D AC         	#	LEA	-84(%ebp), %ecx
+	8B 5D 04         	#	movl 4(%ebp), %ebx
+	B8 03 00 00 00   	#	MOVL	$3, %eax
+	CD 80            	#	INT	$0x80
+	83 F8 00         	#	CMPL	$0, %eax
+	0F 8C 42 FE FF FF	#	JL	error
+	89 C3            	#	MOVL	%eax, %ebx
+	0F 84 3F FE FF FF	#	JE	success
+
+	#  Is the byte white space?  If so, loop back
+	8A 45 AC         	#	MOVB	-84(%ebp), %al
+	50               	#	PUSH	%eax
+	E8 85 FD FF FF   	#	CALL	isws
+	83 F8 00         	#	CMPL	$0, %eax
+	5A               	#	POP	%edx
+	0F 85 CA FF FF FF	#	JNE	.L8
+
+	#  We have a byte.  What is it?
+	E8 4E FE FF FF   	#	CALL	comment
+	83 F8 00         	#	CMP	$0, %eax
+	0F 85 BC FF FF FF	#	JNE	.L8
+	E8 62 FE FF FF   	#	CALL	octet
+	83 F8 00         	#	CMP	$0, %eax
+	0F 85 AE FF FF FF	#	JNE	.L8
+	E8 10 FF FF FF   	#	CALL	label
+	83 F8 00         	#	CMP	$0, %eax
+	0F 85 A0 FF FF FF	#	JNE	.L8
+	E9 F8 FD FF FF   	#	JMP	error
+
+####	#  And finally, the entry point.
+	#  Last per requirement for elfify.
+	E9 39 FF FF FF		#	JMP	main

@@ -24,7 +24,7 @@ $(BUILD)/unhexl $(BUILD)/elfify:
 as2:	$(BUILD)/as2
 
 $(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
-	$(BUILD)/unhexl < as.ts.xl > $(BUILD)/as.ts
+	$(BUILD)/unhexl as.ts.xl $(BUILD)/as.ts
 	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2
 	$(RM) $(BUILD)/as.ts
 
