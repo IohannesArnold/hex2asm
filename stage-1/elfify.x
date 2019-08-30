@@ -13,9 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with elfify.  If not, see <http://www.gnu.org/licenses/>.
 
-# This file should produce a binary with the sha256 sum of:
-# 24e627edb8a439e15957fb26a76d7ef6d9f1d6c47802fa17bfd1e4d0dafa4c3b 
-
 ## ELF Header
 7F 45 4C 46			# e_ident[EI_MAG] ELF's magic number
 

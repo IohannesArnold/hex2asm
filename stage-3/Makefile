@@ -62,21 +62,21 @@ check-ld:	$(BUILD)/as $(BUILD)/ld ld.s
 	$(CMP) $(BUILD)/ld $(BUILD)/ld_alt
 	$(RM) ld.o $(BUILD)/ld_alt
 
-testprog:	$(BUILD)/as $(BUILD)/ld test1.s test2.s test3.s
-	$(BUILD)/as test2.s
-	$(BUILD)/as test3.s
-	$(BUILD)/ld -r -o test2+3.o test2.o test3.o
-	$(BUILD)/as test1.s
-	$(BUILD)/ld -o testprog test1.o test2+3.o
-	$(RM) test1.o test2.o test3.o test2+3.o
+testprog:	$(BUILD)/as $(BUILD)/ld $(addprefix tests/,test1.s test2.s test3.s)
+	$(BUILD)/as tests/test2.s
+	$(BUILD)/as tests/test3.s
+	$(BUILD)/ld -r -o tests/test2+3.o tests/test2.o tests/test3.o
+	$(BUILD)/as tests/test1.s
+	$(BUILD)/ld -o tests/testprog tests/test1.o tests/test2+3.o
+	$(RM) $(addprefix tests/,test1.o test2.o test3.o test2+3.o)
 
-check-sep:	testprog
-	./testprog
-	$(RM) testprog
+check-sep:	tests/testprog
+	./tests/testprog
+	$(RM) tests/testprog
 
 
 clean:
 	$(RM) -f $(addprefix $(BUILD)/,as.ts ld.ts as2.5 ld2.5 as ld)
 	$(RM) -f as2.o ld2.o as.o ld.o 
-	$(RM) -f test1.o test2.o test3.o test2+3.o testprog
+	$(RM) -f $(addprefix tests/,test1.o test2.o test3.o test2+3.o testprog )
 

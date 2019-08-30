@@ -35,9 +35,9 @@ $(BUILD)/unhexl:	$(BUILD)/unhex elfify unhexl.ts.x
 
 check:	check-unhexl
 
-check-unhexl:	unhexl elfify 
-	$(BUILD)/unhexl unhexl.ts.xl $(BUILD)/unhexl_2.ts
-	$(BUILD)/elfify $(BUILD)/unhexl_1.ts $(BUILD)/unhexl_2
+check-unhexl:	unhexl elfify unhexl.ts.x
+	$(BUILD)/unhexl unhexl.ts.x $(BUILD)/unhexl_2.ts
+	$(BUILD)/elfify $(BUILD)/unhexl_2.ts $(BUILD)/unhexl_2
 	$(CMP) $(BUILD)/unhexl $(BUILD)/unhexl_2
 	$(RM) $(BUILD)/unhexl_2.ts $(BUILD)/unhexl_2
 
