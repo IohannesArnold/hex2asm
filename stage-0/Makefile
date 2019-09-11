@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
+BUILD = ../build
 
 all:	$(BUILD)/unhex
 
@@ -26,7 +27,7 @@ $(BUILD)/unhex:	unhex.x
 
 check:	check-unhex
 
-check-unhex:
+check-unhex: $(BUILD)/unhex
 	$(BUILD)/unhex ./unhex.x $(BUILD)/unhex2
 	$(CMP) $(BUILD)/unhex $(BUILD)/unhex2
 	$(RM) $(BUILD)/unhex2

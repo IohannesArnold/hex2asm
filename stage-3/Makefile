@@ -15,8 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
+BUILD = ../build
 
-all:	$(BUILD)/as $(BUILD)/ld
+all:	$(BUILD)/bin/as $(BUILD)/bin/ld
 
 # as2   is the assembler from stage 2.
 # as2.5 is this stage's assembler (written in asm), assembled by as2.
@@ -38,36 +39,36 @@ $(BUILD)/ld2.5:	ld.s $(BUILD)/as2 $(BUILD)/elfify
 	$(BUILD)/elfify $(BUILD)/ld.ts $(BUILD)/ld2.5
 	$(RM) $(BUILD)/ld.ts
 
-$(BUILD)/as:	as.s $(BUILD)/as2.5 $(BUILD)/ld2.5 
+$(BUILD)/bin/as:	as.s $(BUILD)/as2.5 $(BUILD)/ld2.5 
 	$(BUILD)/as2.5 as.s
-	$(BUILD)/ld2.5 -o $(BUILD)/as as.o
+	$(BUILD)/ld2.5 -o $(BUILD)/bin/as as.o
 	$(RM) as.o
 
-$(BUILD)/ld:	ld.s $(BUILD)/as2.5 $(BUILD)/ld2.5 
+$(BUILD)/bin/ld:	ld.s $(BUILD)/as2.5 $(BUILD)/ld2.5 
 	$(BUILD)/as2.5 ld.s
-	$(BUILD)/ld2.5 -o $(BUILD)/ld ld.o
+	$(BUILD)/ld2.5 -o $(BUILD)/bin/ld ld.o
 	$(RM) ld.o
 
 check:	check-as check-ld check-sep
 
-check-as:	$(BUILD)/as $(BUILD)/ld as.s
-	$(BUILD)/as as.s
-	$(BUILD)/ld -o $(BUILD)/as_alt as.o
-	$(CMP) $(BUILD)/as $(BUILD)/as_alt
-	$(RM) as.o $(BUILD)/as_alt
+check-as:	$(BUILD)/bin/as $(BUILD)/bin/ld as.s
+	$(BUILD)/bin/as as.s
+	$(BUILD)/bin/ld -o $(BUILD)/bin/as_alt as.o
+	$(CMP) $(BUILD)/bin/as $(BUILD)/bin/as_alt
+	$(RM) as.o $(BUILD)/bin/as_alt
 
-check-ld:	$(BUILD)/as $(BUILD)/ld ld.s
-	$(BUILD)/as ld.s
-	$(BUILD)/ld -o $(BUILD)/ld_alt ld.o
-	$(CMP) $(BUILD)/ld $(BUILD)/ld_alt
-	$(RM) ld.o $(BUILD)/ld_alt
+check-ld:	$(BUILD)/bin/as $(BUILD)/bin/ld ld.s
+	$(BUILD)/bin/as ld.s
+	$(BUILD)/bin/ld -o $(BUILD)/bin/ld_alt ld.o
+	$(CMP) $(BUILD)/bin/ld $(BUILD)/bin/ld_alt
+	$(RM) ld.o $(BUILD)/bin/ld_alt
 
-testprog:	$(BUILD)/as $(BUILD)/ld $(addprefix tests/,test1.s test2.s test3.s)
-	$(BUILD)/as tests/test2.s
-	$(BUILD)/as tests/test3.s
-	$(BUILD)/ld -r -o tests/test2+3.o tests/test2.o tests/test3.o
-	$(BUILD)/as tests/test1.s
-	$(BUILD)/ld -o tests/testprog tests/test1.o tests/test2+3.o
+tests/testprog:	$(BUILD)/bin/as $(BUILD)/bin/ld $(addprefix tests/,test1.s test2.s test3.s)
+	$(BUILD)/bin/as tests/test2.s
+	$(BUILD)/bin/as tests/test3.s
+	$(BUILD)/bin/ld -r -o tests/test2+3.o tests/test2.o tests/test3.o
+	$(BUILD)/bin/as tests/test1.s
+	$(BUILD)/bin/ld -o tests/testprog tests/test1.o tests/test2+3.o
 	$(RM) $(addprefix tests/,test1.o test2.o test3.o test2+3.o)
 
 check-sep:	tests/testprog
