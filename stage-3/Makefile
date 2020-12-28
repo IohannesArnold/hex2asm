@@ -30,12 +30,12 @@ $(BUILD)/as2 $(BUILD)/elfify:
 	$(MAKE) -C ../stage-2
 
 $(BUILD)/as2.5:	as.s $(BUILD)/as2 $(BUILD)/elfify
-	$(BUILD)/as2 as.s > $(BUILD)/as.ts
+	$(BUILD)/as2 as.s $(BUILD)/as.ts
 	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2.5
 	$(RM) $(BUILD)/as.ts
 
 $(BUILD)/ld2.5:	ld.s $(BUILD)/as2 $(BUILD)/elfify
-	$(BUILD)/as2 ld.s > $(BUILD)/ld.ts
+	$(BUILD)/as2 ld.s $(BUILD)/ld.ts
 	$(BUILD)/elfify $(BUILD)/ld.ts $(BUILD)/ld2.5
 	$(RM) $(BUILD)/ld.ts
 
@@ -67,9 +67,9 @@ tests/testprog:	$(BUILD)/bin/as $(BUILD)/bin/ld $(addprefix tests/,test1.s test2
 	$(BUILD)/bin/as tests/test2.s
 	$(BUILD)/bin/as tests/test3.s
 	$(BUILD)/bin/ld -r -o tests/test2+3.o tests/test2.o tests/test3.o
-	$(BUILD)/bin/as tests/test1.s
-	$(BUILD)/bin/ld -o tests/testprog tests/test1.o tests/test2+3.o
-	$(RM) $(addprefix tests/,test1.o test2.o test3.o test2+3.o)
+	$(BUILD)/bin/as tests/test1.s tests/test4.o
+	$(BUILD)/bin/ld -o tests/testprog tests/test4.o tests/test2+3.o
+	$(RM) $(addprefix tests/,test4.o test2.o test3.o test2+3.o)
 
 check-sep:	tests/testprog
 	./tests/testprog
@@ -79,5 +79,5 @@ check-sep:	tests/testprog
 clean:
 	$(RM) -f $(addprefix $(BUILD)/,as.ts ld.ts as2.5 ld2.5 as ld)
 	$(RM) -f as2.o ld2.o as.o ld.o 
-	$(RM) -f $(addprefix tests/,test1.o test2.o test3.o test2+3.o testprog )
+	$(RM) -f $(addprefix tests/,test4.o test2.o test3.o test2+3.o testprog )
 

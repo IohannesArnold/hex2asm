@@ -3477,9 +3477,9 @@ _start:
 	MOVL	%esp, %ebp
 	SUBL	$152, %esp
 
-	#  Check we have a command line argument
+	#  Check we have at least one command line argument
 	CMPL	$2, 0(%ebp)
-	JNE	error
+	JL	error
 
 	#  Open the file
 	XORL	%ecx, %ecx		# 0 == O_RDONLY
@@ -3555,7 +3555,12 @@ _start:
 	POP	%edx
 	POP	%ecx
 
-	#  Determine the output filename
+	#  Check if we have outfile command line argument
+	MOVL	12(%ebp), %ebx
+	CMPL	$3, 0(%ebp)
+	JE	.L8a2
+
+	#  Determine the default output filename
 	PUSH	8(%ebp)
 	CALL	strlen
 	POP	%ecx
@@ -3565,10 +3570,11 @@ _start:
 	CMPB	$0x2E, -2(%eax)		# '.'
 	JNE	error
 	MOVB	$0x6F, -1(%eax)		# 'o'
+	MOVL	8(%ebp), %ebx
 
+.L8a2:
 	#  And create the output file
 	MOVL	$0x1A4, %ecx		# 0x1A4 == 0644 (file creation mode)
-	MOVL	8(%ebp), %ebx
 	MOVL	$8, %eax		# 8 == __NR_creat
 	INT	$0x80
 	CMPL	$0, %eax
