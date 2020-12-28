@@ -32,9 +32,9 @@ $(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
 check:	check-as
 
 check-as:	$(BUILD)/as2 tests/as.s
-	$(BUILD)/as2 tests/as.s > $(BUILD)/as_1.ts
+	$(BUILD)/as2 tests/as.s $(BUILD)/as_1.ts
 	$(BUILD)/elfify $(BUILD)/as_1.ts $(BUILD)/as_1
-	$(BUILD)/as_1 tests/as.s > $(BUILD)/as_2.ts
+	$(BUILD)/as_1 tests/as.s $(BUILD)/as_2.ts
 	$(CMP) $(BUILD)/as_1.ts $(BUILD)/as_2.ts
 	$(RM) $(BUILD)/as_1.ts $(BUILD)/as_2.ts $(BUILD)/as_1
 

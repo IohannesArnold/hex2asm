@@ -1826,48 +1826,10 @@ tl_ident:
 
 	#  Nothing else is permitted here.	
 	E9 .L8		#	JMP	.L8
-	#  --- The main loop
-main:
-	89 E5			#	MOVL	%esp, %ebp
-	81 EC 74 10 00 00	#	SUBL	$4212, %esp
-	#  label* label_end = &labels[0];
-	8D 85 A0 EF FF FF	#	LEA	-4192(%ebp), %eax
-	89 45 F8		#	MOVL	%eax, -8(%ebp)
-	#  label* label_end_store = &labels[256];  # 4096 == 256*sizeof(label)
-	81 C0 00 10 00 00	#	ADDL	$4096, %eax
-	89 45 F4		#	MOVL	%eax, -12(%ebp)
 
-	#  Check we have a command line argument
-	81 7D 00 02 00 00 00	#	CMPL	$2, 0(%ebp)
-	0F 85 error		#	JNE	error
-
-	#  Open the file
-	31 C9			#	XORL	%ecx, %ecx
-	8B 5D 08		#	MOVL	8(%ebp), %ebx
-	B8 05 00 00 00		#	MOVL	$5, %eax	# 3 = __NR_open
-	CD 80			#	INT	$0x80
-	83 F8 00		#	CMPL	$0, %eax
-	0F 8C error		#	JL	error
-
-	#  memset( &fout, 0, sizeof(ofile) );
-	#  No write on first pass, so fout.fd = -1
-	C7 85 90 EF FF FF FF FF FF FF #	MOVL	$-1, -4208(%ebp)
-	C7 85 94 EF FF FF 00 00 00 00 #	MOVL	$0, -4204(%ebp)
-
-	#  memset( &fin, 0, sizeof(ifile) );
-	89 85 98 EF FF FF	#	MOVL	%eax, -4200(%ebp)
-	C7 85 9C EF FF FF 00 00 00 00 #	MOVL	$0, -4196(%ebp)
-
-	#  Locate the mnemonics table:  instrct* mnemonics = &mnemonics;
-	E8 getip		#	CALL	getip
-	81 C0 mnemonics		#	ADDL	mnemonics, %eax
-	81 C0 06 00 00 00	#	ADDL	$6, %eax   # len of prev instr
-	89 45 FC		#	MOVL	%eax, -4(%ebp)
-
-	E8 .L8			#	CALL	.L8
-
-	#  Set fout.fd = 1 (for stdout) to initiate writing, and reset counter
-	C7 85 90 EF FF FF 01 00 00 00 #	MOVL	$1, -4208(%ebp)
+.L8b:
+	#  Set fout.fd to real value to initiate writing, and reset counter
+	89 85 90 EF FF FF	#	MOVL    %eax, -4208(%ebp)
 	C7 85 94 EF FF FF 00 00 00 00 #	MOVL	$0, -4204(%ebp)
 
 	#  Seek to the beginning of the file for second pass
@@ -1881,6 +1843,67 @@ main:
 
 	E8 .L8			#	CALL	.L8
 	E9 success		#	JMP	success
+
+	#  --- The main loop
+main:
+	89 E5			#	MOVL	%esp, %ebp
+	81 EC 74 10 00 00	#	SUBL	$4212, %esp
+	#  label* label_end = &labels[0];
+	8D 85 A0 EF FF FF	#	LEA	-4192(%ebp), %eax
+	89 45 F8		#	MOVL	%eax, -8(%ebp)
+	#  label* label_end_store = &labels[256];  # 4096 == 256*sizeof(label)
+	81 C0 00 10 00 00	#	ADDL	$4096, %eax
+	89 45 F4		#	MOVL	%eax, -12(%ebp)
+
+	#  Check we have a command line argument
+	81 7D 00 02 00 00 00	#	CMPL	$2, 0(%ebp)
+	0F 8C error		#	JL	error
+
+	#  Open the infile
+	31 C9			#	XORL	%ecx, %ecx
+	8B 5D 08		#	MOVL	8(%ebp), %ebx
+	B8 05 00 00 00		#	MOVL	$5, %eax	# 5 = __NR_open
+	CD 80			#	INT	$0x80
+	83 F8 00		#	CMPL	$0, %eax
+	0F 8C error		#	JL	error
+
+	#  memset( &fin, 0, sizeof(ifile) );
+	89 85 98 EF FF FF	#	MOVL	%eax, -4200(%ebp)
+	C7 85 9C EF FF FF 00 00 00 00 #	MOVL	$0, -4196(%ebp)
+
+	#  memset( &fout, 0, sizeof(ofile) );
+	#  No write on first pass, so fout.fd = -1
+	C7 85 90 EF FF FF FF FF FF FF #	MOVL	$-1, -4208(%ebp)
+	C7 85 94 EF FF FF 00 00 00 00 #	MOVL	$0, -4204(%ebp)
+
+	#  Make sure there are no more than 2 command line arguments
+	81 7D 00 03 00 00 00	#	CMPL	$3, 0(%ebp)
+	0F 8F error		#	JG	error
+
+	#  Locate the mnemonics table:  instrct* mnemonics = &mnemonics;
+	E8 getip		#	CALL	getip
+	81 C0 mnemonics		#	ADDL	mnemonics, %eax
+	81 C0 06 00 00 00	#	ADDL	$6, %eax   # len of prev instr
+	89 45 FC		#	MOVL	%eax, -4(%ebp)
+
+	E8 .L8			#	CALL	.L8
+
+	#  If no outfile, set fout.fd = 1 for stdout
+	C7 C0 01 00 00 00    	#	MOVL	$1, %eax
+
+	#  Check if the infile was the only command line argument
+	81 7D 00 02 00 00 00	#	CMPL	$2, 0(%ebp)
+	0F 84 .L8b		#	JE	.L8b
+
+	#  Create the outfile
+	C7 C1 A4 01 00 00	#	MOVL	$0x1A4, %ecx	# 0x1A4 == 0644 (file creation mode)
+	8B 5D 0C		#	MOVL    12(%ebp), %ebx
+	C7 C0 08 00 00 00	#	MOVL	$8, %eax	# 8 == __NR_creat
+	CD 80			#	INT	$0x80
+	83 F8 00		#	CMPL	$0, %eax
+	0F 8C error		#	JL	error
+
+	E9 .L8b			#	JMP	.L8b
 
 ####    #  And finally, the entry point.
 	#  Last per requirement for elfify.

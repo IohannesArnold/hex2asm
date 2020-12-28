@@ -1806,23 +1806,28 @@ main:
 
 	#  Check we have a command line argument
 	CMPL	$2, 0(%ebp)
-	JNE	error
+	JL	error
 
 	#  Open the file
-	XORL	%ecx, %ecx	# 0 == O_RDONLY
-	MOVL	8(%ebp), %ebx
 	MOVL	$5, %eax	# 5 == __NR_open
+	MOVL	8(%ebp), %ebx
+	XORL	%ecx, %ecx	# 0 == O_RDONLY
 	INT	$0x80
 	CMPL	$0, %eax
 	JL	error
+
+	#  memset( &fin, 0, sizeof(ifile) );
+	MOVL	%eax, -4200(%ebp) # 0 == stdin
+	MOVL	$0, -4196(%ebp)
 
 	#  memset( &fout, 0, sizeof(ofile) );
 	#  No write on first pass, so fout.fd = -1
 	MOVL	$-1, -4208(%ebp)
 	MOVL	$0, -4204(%ebp)
-	#  memset( &fin, 0, sizeof(ifile) );
-	MOVL	%eax, -4200(%ebp) # 0 == stdin
-	MOVL	$0, -4196(%ebp)
+
+	#  Make sure there are no more command line arguments
+	CMPL	$3, 0(%ebp)
+	JG	error
 
 	#  Locate the mnemonics table:  instrct* mnemonics = &mnemonics;
 	#  CALL next_line; next_line: POP %eax  simply effects  MOV %eip, %eax
@@ -1837,8 +1842,24 @@ main:
 
 	CALL	.L8
 
-	#  Set fout.fd = 1 (for stdout) to initiate writing, and reset counter
-	MOVL	$1, -4208(%ebp)
+	#  If no outfile, set fout.fd = 1 for stdout
+	MOVL	$1, %eax
+
+	#  Check if infile was the only command line argument
+	CMPL	$2, 0(%ebp)
+	JE	.L8b
+
+	#  Open the output file
+	MOVL	$8, %eax	# 5 == __NR_creat
+	MOVL	12(%ebp), %ebx
+	MOVL	$0x1A4, %ecx	# 0x1A4 == 0644 (file creation mode)
+	INT	$0x80
+	CMPL	$0, %eax
+	JL	error
+
+.L8b:
+	#  Set fout.fd to real value to initiate writing, and reset counter
+	MOVL	%eax, -4208(%ebp)
 	MOVL	$0, -4204(%ebp)
 
 	#  Seek to the beginning of the file for second pass
