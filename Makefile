@@ -16,7 +16,7 @@
 
 include ./config.make
 
-STAGES = 0 1 2 3 4 5
+STAGES = 0 1 2 3
 
 all check: $(BUILD_DIR)
 	set -e; for n in $(STAGES); do $(MAKE) -r -C stage-$$n $@; done
