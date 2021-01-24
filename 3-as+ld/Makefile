@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
-BUILD = ../build
+BUILD = ../$(BUILD_DIR)
 
 all:	$(BUILD)/bin/as $(BUILD)/bin/ld
 
@@ -27,7 +27,7 @@ all:	$(BUILD)/bin/as $(BUILD)/bin/ld
 # The same conventions apply to ld, except that there is no ld2.
 
 $(BUILD)/as2 $(BUILD)/elfify:
-	$(MAKE) -C ../stage-2
+	$(MAKE) -C ../2-as
 
 $(BUILD)/as2.5:	as.s $(BUILD)/as2 $(BUILD)/elfify
 	$(BUILD)/as2 as.s $(BUILD)/as.ts

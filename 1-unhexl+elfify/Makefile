@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
-BUILD = ../build
+BUILD = ../$(BUILD_DIR)
 
 all: elfify unhexl
 
 $(BUILD)/unhex:
-	$(MAKE) -C ../stage-0
+	$(MAKE) -C ../0-unhex
 
 elfify:	$(BUILD)/elfify
 

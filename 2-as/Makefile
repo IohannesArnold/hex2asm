@@ -1,4 +1,4 @@
-# Makefile
+# stage-2/Makefile
 # Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,15 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-include ./config.make
+include ../config.make
+BUILD = ../$(BUILD_DIR)
 
-STAGES = 0-unhex 1-unhexl+elfify 2-as 3-as+ld 4-asmutils
+all:	as2
 
-all check: $(BUILD_DIR)
-	set -e; for n in $(STAGES); do $(MAKE) -r -C $$n $@; done
+$(BUILD)/unhexl $(BUILD)/elfify:
+	$(MAKE) -C ../1-unhexl+elfify
 
-$(BUILD_DIR): 
-	$(MKDIR) -p $(BUILD_DIR)/bin
+as2:	$(BUILD)/as2
+
+$(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
+	$(BUILD)/unhexl as.ts.xl $(BUILD)/as.ts
+	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2
+	$(RM) $(BUILD)/as.ts
+
+check:	check-as
+
+check-as:	$(BUILD)/as2 tests/as.s
+	$(BUILD)/as2 tests/as.s $(BUILD)/as_1.ts
+	$(BUILD)/elfify $(BUILD)/as_1.ts $(BUILD)/as_1
+	$(BUILD)/as_1 tests/as.s $(BUILD)/as_2.ts
+	$(CMP) $(BUILD)/as_1.ts $(BUILD)/as_2.ts
+	$(RM) $(BUILD)/as_1.ts $(BUILD)/as_2.ts $(BUILD)/as_1
 
 clean:
-	$(RM) -rf $(BUILD_DIR)
+	$(RM) -f $(BUILD)/as2 $(BUILD)/as.ts
+

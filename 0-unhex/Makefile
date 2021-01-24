@@ -1,4 +1,4 @@
-# stage-2/Makefile
+# stage-0/Makefile
 # Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,29 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
-BUILD = ../build
+BUILD = ../$(BUILD_DIR)
 
-all:	as2
+all:	$(BUILD)/unhex
 
-$(BUILD)/unhexl $(BUILD)/elfify:
-	$(MAKE) -C ../stage-1
+unhex:	$(BUILD)/unhex
 
-as2:	$(BUILD)/as2
+$(BUILD)/unhex:	unhex.x
+	for x in `$(SED) '/^#/d;s/#.*//;s/ *//' unhex.x`; do $(PRINTF) \\x$$x; done > $@ 
+	$(CHMOD) +x $@
 
-$(BUILD)/as2:	as.ts.xl $(BUILD)/unhexl $(BUILD)/elfify
-	$(BUILD)/unhexl as.ts.xl $(BUILD)/as.ts
-	$(BUILD)/elfify $(BUILD)/as.ts $(BUILD)/as2
-	$(RM) $(BUILD)/as.ts
+check:	check-unhex
 
-check:	check-as
+check-unhex: $(BUILD)/unhex
+	$(BUILD)/unhex ./unhex.x $(BUILD)/unhex2
+	$(CMP) $(BUILD)/unhex $(BUILD)/unhex2
+	$(RM) $(BUILD)/unhex2
 
-check-as:	$(BUILD)/as2 tests/as.s
-	$(BUILD)/as2 tests/as.s $(BUILD)/as_1.ts
-	$(BUILD)/elfify $(BUILD)/as_1.ts $(BUILD)/as_1
-	$(BUILD)/as_1 tests/as.s $(BUILD)/as_2.ts
-	$(CMP) $(BUILD)/as_1.ts $(BUILD)/as_2.ts
-	$(RM) $(BUILD)/as_1.ts $(BUILD)/as_2.ts $(BUILD)/as_1
-
-clean:
-	$(RM) -f $(BUILD)/as2 $(BUILD)/as.ts
-
+clean:	
+	$(RM) -f $(BUILD)/unhex $(BUILD)/unhex2

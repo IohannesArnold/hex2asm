@@ -1,5 +1,5 @@
-# stage-0/Makefile
-# Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
+# stage-4/Makefile
+# Copyright (C) 2020 John Arnold
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,22 +15,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
-BUILD = ../build
+BUILD = ../$(BUILD_DIR)
+LD = $(BUILD)/bin/ld
+AS = $(BUILD)/bin/as
 
-all:	$(BUILD)/unhex
+all:	$(BUILD)/bin/mkdir
 
-unhex:	$(BUILD)/unhex
+$(LD) $(AS):
+	$(MAKE) -C ../3-as+ld
 
-$(BUILD)/unhex:	unhex.x
-	for x in `$(SED) '/^#/d;s/#.*//;s/ *//' unhex.x`; do $(PRINTF) \\x$$x; done > $@ 
-	$(CHMOD) +x $@
+# Suppress the default rules
+.SUFFIXES:
 
-check:	check-unhex
+%.o:	%.s $(AS)
+	$(AS) $<
 
-check-unhex: $(BUILD)/unhex
-	$(BUILD)/unhex ./unhex.x $(BUILD)/unhex2
-	$(CMP) $(BUILD)/unhex $(BUILD)/unhex2
-	$(RM) $(BUILD)/unhex2
-
-clean:	
-	$(RM) -f $(BUILD)/unhex $(BUILD)/unhex2
+$(BUILD)/bin/mkdir:	mkdir.o $(LD)
+	$(LD) -o $@ $<
