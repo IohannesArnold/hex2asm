@@ -19,7 +19,7 @@ BUILD = ../$(BUILD_DIR)
 LD = $(BUILD)/bin/ld
 AS = $(BUILD)/bin/as
 
-all:	$(BUILD)/bin/mkdir
+all:	$(BUILD)/bin/mkdir $(BUILD)/bin/sh
 
 $(LD) $(AS):
 	$(MAKE) -C ../3-as+ld
@@ -31,4 +31,6 @@ $(LD) $(AS):
 	$(AS) $<
 
 $(BUILD)/bin/mkdir:	mkdir.o $(LD)
+	$(LD) -o $@ $<
+$(BUILD)/bin/sh:	sh.o $(LD)
 	$(LD) -o $@ $<
