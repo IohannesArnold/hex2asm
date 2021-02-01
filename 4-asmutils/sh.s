@@ -259,6 +259,76 @@ env_inherit:
 		RET
 
 #############################################################################
+## get_env ##################################################################
+#############################################################################
+## esi=>  pointing to first char of var name in read buffer
+## ecx=>  number of chars remaining in read buffer
+## edi=>  pointing to next open space in write buffer
+## <=esi  pointing to first char after var name in read buffer
+## <=ecx  number of chars remaining in read buffer
+## <=edi  pointing to next open space in write buffer after env value
+#############################################################################
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#FIXME: function needs a total rewrite; undefined vars have name for value
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+get_env:
+		PUSH	%ebp
+		MOVL	%esp, %ebp
+		PUSH	%edi		# -4(ebp)
+		PUSH	%ecx		# -8(ebp)
+		PUSH	%esi		#-12(ebp)
+		MOVL	$.environ, %eax
+		PUSH	%eax
+		JMP	.try_env
+.prep_next:
+		POP	%eax
+		ADDL	$4, %eax
+		MOVL	-12(%ebp), %esi
+		MOVL	-8(%ebp), %ecx
+		PUSH	%eax
+.try_env:
+		MOVL	(%eax), %edi
+		ORL	%edi, %edi
+		JZ	.write_val
+		CLD
+		REPE	CMPSB
+		MOVB	-1(%edi), %al
+		CMPB	'=', %al
+		JNE	.prep_next
+		INCL	%ecx
+		DECL	%esi
+		MOVB	(%esi), %al
+		CMPB	'}', %al
+		JE	.write_val
+		CMPB	' ', %al
+		JE	.write_val
+		CMPB	'/', %al
+		JE	.write_val
+		CMPB	'\n', %al
+		JE	.write_val
+		JMP	.prep_next
+.write_val:
+		POP	%eax	# old .environ offset
+		POP	%eax	# old %esi
+		POP	%eax	# old %ecx
+		POP	%eax	# old %edi (still needed)
+		PUSH	%esi
+		MOVL	%edi, %esi	# now esi points to env value
+		MOVL	%eax, %edi	# now edi points to write buffer
+		ORL	%esi, %esi
+		JZ	.ge_ret
+.env_char:
+		LODSB
+		STOSB
+		ORB	%al, %al
+		JNZ	.env_char
+		DECL	%edi
+.ge_ret:
+		POP	%esi
+		POP	%ebp
+		RET
+
+#############################################################################
 #############################################################################
 ####
 #### PART 3.3: subroutines for terminal handling
@@ -344,6 +414,8 @@ cmdline_prs:
 		JE	.sing_quot
 		CMPB	'"', %al
 		JE	.dbl_quot
+		CMPB	'$', %al
+		JE	.substitn
 		STOSB
 		JMP	.next_char
 .sing_quot:
@@ -368,6 +440,14 @@ cmdline_prs:
 		CMPB	'\n', %al
 		JE	.next_char
 		JMP	.skip_cmnt
+.substitn:
+		CALL	get_env
+		MOVB	(%esi), %al
+		CMPB	'}', %al
+		JNE	.next_char
+		LODSB
+		DECL	%ecx
+		JMP	.next_char
 .end_arg:
 		MOVL	(%ebx), %eax
 		CMPL	%eax, %edi	# if eax = edi, no new arg
