@@ -30,7 +30,11 @@ $(LD) $(AS):
 %.o:	%.s $(AS)
 	$(AS) $<
 
+$(BUILD)/bin/ln:	ln.o $(LD)
+	$(LD) -o $@ $<
+
 $(BUILD)/bin/mkdir:	mkdir.o $(LD)
 	$(LD) -o $@ $<
+
 $(BUILD)/bin/sh:	sh.o $(LD)
 	$(LD) -o $@ $<
